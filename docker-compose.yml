@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  fastapi-app:
+    image: python:3.7
+    environment:
+      - MONGODB_URL=mongodb://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@mongo:${MONGODB_PORT}/${MONGODB_DATABASE}
+    env_file:
+      - .env
+    volumes:
+      - .:/code
+    working_dir: /code
+    command: bash -c "pip install -r requirements.txt && uvicorn main:app --host 0.0.0.0 --port 8000"
+    ports:
+      - "8000:8000"
+    depends_on:
+      - mongo
+
+  mongo:
+    image: mongo
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=${MONGODB_USERNAME}
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGODB_PASSWORD}
+    env_file:
+      - .env
+    ports:
+      - "${MONGODB_PORT}:${MONGODB_PORT}"
+    volumes:
+      - mongodb_data:/data/db
+
+volumes:
+  mongodb_data:
